@@ -200,11 +200,24 @@ class GoogleDriveAPI(object):
             results = self.get_file_metadata_by_query(folder_query)
             folder_id = self.get_folder_id(results)
             if folder_id:
-                inputs_file_id = self.get_folder_contents(folder_id)
-                if inputs_file_id:
-                    return {"self_id": folder_id, "children": inputs_file_id}
-                else:
-                    return {"self_id": folder_id, "children": None}
+                if isinstance(folder_id, str):
+                    inputs_file_id = self.get_folder_contents(folder_id)
+                    if inputs_file_id:
+                        return {
+                            "self_id": folder_id,
+                            "children": inputs_file_id
+                        }
+                    else:
+                        return {"self_id": folder_id, "children": None}
+                elif isinstance(folder_id, list):
+                    records = list()
+                    for entry in folder_id:
+                        file_id = self.get_folder_contents(entry)
+                        _data = {
+                            "self_id": entry,
+                            "children": file_id
+                        }
+                        records.append(_data)
             else:
                 logger.info("No Folder found!")
                 return {"self_id": None, "children": None}
@@ -363,7 +376,11 @@ class GoogleDriveAPI(object):
             f"Creating Folder '{folder_name}' inside '{target_folder}'")
         selected_folders = self.get_folder(target_folder)
         logger.info(selected_folders)
-        parent_folder_id = selected_folders["self_id"]
+        parent_folder_id = None
+        if isinstance(selected_folders, dict):
+            parent_folder_id = selected_folders["self_id"]
+        elif isinstance(selected_folders, list):
+            parent_folder_id = selected_folders[0]["self_id"]
         try:
             folder_metadata = {
                 "name": folder_name,
