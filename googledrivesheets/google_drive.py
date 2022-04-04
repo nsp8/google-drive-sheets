@@ -10,7 +10,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-import util
+from . import util
 
 logger = logging.getLogger("google_drive_api")
 logger.setLevel(logging.INFO)
